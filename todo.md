@@ -1,5 +1,4 @@
-## todo: implement
-- chat death message - show who killed who, how and where
+## TODO:
 
 
 ## BUGS:

@@ -240,5 +240,9 @@
     "text.autoconfig.simpletweaks.option.visuals.heldItemTooltips.enable": "Enable Held Item Tooltips",
     "text.autoconfig.simpletweaks.option.visuals.heldItemTooltips.showDurability": "Show Durability",
     "text.autoconfig.simpletweaks.option.visuals.heldItemTooltips.showEnchantments": "Show Enchantments",
-    "text.autoconfig.simpletweaks.option.visuals.heldItemTooltips.maxEnchantments": "Max Enchantments to Show"
+    "text.autoconfig.simpletweaks.option.visuals.heldItemTooltips.maxEnchantments": "Max Enchantments to Show",
+  "text.autoconfig.simplefun.option.visuals.enhanceDeathMessages": "Enhance Death Messages",
+  "text.autoconfig.simplefun.option.visuals.enhanceDeathMessages.@Tooltip": "Appends coordinates [x, y, z] to chat death messages if the player is in render distance.",
+  "text.autoconfig.simplefun.option.visuals.deathCoordsMode": "Death Coordinates Mode",
+  "text.autoconfig.simplefun.option.visuals.deathCoordsMode.@Tooltip": "Choose how death coordinates are displayed.\nAppend: Inline with the message.\nSeparate: As a separate system message."
 }

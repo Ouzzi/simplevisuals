@@ -28,6 +28,7 @@ public class SimplevisualsConfig implements ConfigData {
     }
 
 
+
     public static class Visuals {
         @ConfigEntry.Gui.Tooltip
         public boolean enablePlayerLocator = true;
@@ -48,6 +49,19 @@ public class SimplevisualsConfig implements ConfigData {
         public float elytraPitchTolerance = 10.0f;
         @ConfigEntry.Gui.Tooltip
         public float elytraSensitivity = 4.0f;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean enhanceDeathMessages = true;
+
+        public enum DeathCoordsMode {
+            DISABLED,
+            APPEND,    // "Public" Style: Wird direkt an die Nachricht angehängt
+            SEPARATE   // "Private" Style: Eigene Chat-Nachricht nur für dich
+        }
+
+        @ConfigEntry.Gui.Tooltip
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public DeathCoordsMode deathCoordsMode = DeathCoordsMode.SEPARATE;
 
         @ConfigEntry.Gui.Tooltip
         public boolean enableMapTooltips = true;

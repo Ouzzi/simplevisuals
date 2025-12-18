@@ -1,15 +1,19 @@
 package com.simplevisuals.mixin.client;
 
 import com.simplevisuals.Simplevisuals;
+import com.simplevisuals.config.SimplevisualsConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.gui.hud.ChatHudLine;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import org.spongepowered.asm.mixin.Final;
@@ -18,6 +22,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
@@ -152,5 +157,103 @@ public abstract class ChatHudMixin {
             }
         }
         return null;
+    }
+
+    // --- LOGIK 1: APPEND MODE (Public Style) ---
+    // Verändert die Nachricht, BEVOR sie dem Chat hinzugefügt wird.
+    @ModifyVariable(
+            method = "addMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageSignatureData;Lnet/minecraft/client/gui/hud/MessageIndicator;)V",
+            at = @At("HEAD"),
+            argsOnly = true
+    )
+    private Text appendCoordinatesToDeathMessage(Text message) {
+        // Nur aktiv, wenn Modus auf APPEND steht
+        if (Simplevisuals.getConfig().visuals.deathCoordsMode != SimplevisualsConfig.Visuals.DeathCoordsMode.APPEND) {
+            return message;
+        }
+
+        return simplevisuals$processDeathMessage(message, true);
+    }
+
+    // --- LOGIK 2: SEPARATE MODE (Private Style) ---
+    // Fügt eine ZWEITE Nachricht hinzu, NACHDEM die erste verarbeitet wurde.
+    @Inject(
+            method = "addMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageSignatureData;Lnet/minecraft/client/gui/hud/MessageIndicator;)V",
+            at = @At("TAIL")
+    )
+    private void sendSeparateCoordinates(Text message, net.minecraft.network.message.MessageSignatureData signature, net.minecraft.client.gui.hud.MessageIndicator indicator, CallbackInfo ci) {
+        // Nur aktiv, wenn Modus auf SEPARATE steht
+        if (Simplevisuals.getConfig().visuals.deathCoordsMode != SimplevisualsConfig.Visuals.DeathCoordsMode.SEPARATE) {
+            return;
+        }
+
+        // Wir rufen die Logik auf, aber sagen "nicht anhängen" (append=false),
+        // sondern geben nur den Koordinaten-Text zurück.
+        Text coordsOnly = simplevisuals$processDeathMessage(message, false);
+
+        // Wenn coordsOnly != message, heißt das, wir haben Koordinaten gefunden.
+        // Da processDeathMessage im "false"-Modus nur die Coords zurückgibt, prüfen wir:
+        if (coordsOnly != null && coordsOnly != message) {
+            // Wir fügen die Koordinaten als neue Nachricht hinzu.
+            // WICHTIG: Damit wir keine Endlosschleife erzeugen, muss processDeathMessage sicherstellen,
+            // dass diese neue Nachricht nicht wieder als "death." erkannt wird. (Ist sie nicht, da LiteralText).
+            ((ChatHud)(Object)this).addMessage(coordsOnly);
+        }
+    }
+
+    // --- HILFSMETHODE (Core Logic) ---
+    @Unique
+    private Text simplevisuals$processDeathMessage(Text message, boolean appendMode) {
+        if (message.getContent() instanceof TranslatableTextContent content) {
+            String key = content.getKey();
+
+            // Prüfen ob es eine Todesnachricht ist
+            if (key.startsWith("death.")) {
+                Object[] args = content.getArgs();
+                if (args.length > 0 && args[0] instanceof Text textArg) {
+                    String victimName = textArg.getString();
+
+                    MinecraftClient client = MinecraftClient.getInstance();
+                    if (client.world != null) {
+                        AbstractClientPlayerEntity victim = null;
+
+                        // Ist es der Spieler selbst?
+                        if (client.player != null && client.player.getName().getString().equals(victimName)) {
+                            victim = client.player;
+                        } else {
+                            // Suche in der Spielerliste
+                            List<AbstractClientPlayerEntity> players = client.world.getPlayers();
+                            for (AbstractClientPlayerEntity p : players) {
+                                if (p.getName().getString().equals(victimName)) {
+                                    victim = p;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (victim != null) {
+                            int x = victim.getBlockX();
+                            int y = victim.getBlockY();
+                            int z = victim.getBlockZ();
+
+                            // Formatierung der Koordinaten
+                            MutableText coordText = Text.literal(String.format(" [%d, %d, %d]", x, y, z))
+                                    .formatted(Formatting.GRAY)
+                                    .formatted(Formatting.ITALIC);
+
+                            if (appendMode) {
+                                // Modus APPEND: Original + Coords
+                                return Text.empty().append(message).append(coordText);
+                            } else {
+                                // Modus SEPARATE: Nur Coords (mit Label "Location:")
+                                return Text.literal("Location: ").formatted(Formatting.GRAY).append(coordText);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // Wenn keine Todesnachricht oder Spieler nicht gefunden -> Original zurückgeben
+        return message;
     }
 }
