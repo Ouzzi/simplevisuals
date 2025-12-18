@@ -27,6 +27,7 @@ All features can be configured via `cloth-config` or the `config/simplevisuals.j
 | Feature | Description | Config Key |
 | :--- | :--- | :--- |
 | **Chat Heads** | Renders the sender's player head next to chat messages. | `visuals.enableChatHeads` |
+| **Death Messages** | Optionally shows player heads in death messages in chat. | `visuals.chatHeadsInDeathMessages` |
 
 ### ℹ️ Tooltips
 | Feature | Description | Config Key |

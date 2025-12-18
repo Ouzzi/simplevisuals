@@ -20,6 +20,8 @@ SimpleVisuals is a lightweight fabric mod dedicated to improving your visual exp
 ### 🤝 Multiplayer & Social
 * **Chat Heads:** See who you are talking to! Renders the player's skin face next to their messages in the chat.
 * **Player Locator:** A compass-like bar at the top of the screen shows the direction of other players relative to you.
+* **Death Message:** A custom chat message that optionally includes the player's death coordinates.
+
 
 ### ℹ️ Informative Tooltips
 * **Map Tooltips:** Hover over a filled map item to see the dimension and coordinates of the mapped area.
