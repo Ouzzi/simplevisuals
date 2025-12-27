@@ -22,8 +22,8 @@ public class ClientPlayNetworkHandlerMixin {
 
     @Shadow private ClientWorld world;
 
-    @Unique private int simpletweaks$lastEntityId = -1;
-    @Unique private long simpletweaks$lastPickupTime = 0;
+    @Unique private int simplevisuals$lastEntityId = -1;
+    @Unique private long simplevisuals$lastPickupTime = 0;
 
     @Inject(method = "onEntitiesDestroy", at = @At("HEAD"))
     private void onEntitiesDestroy(EntitiesDestroyS2CPacket packet, CallbackInfo ci) {
@@ -53,11 +53,11 @@ public class ClientPlayNetworkHandlerMixin {
         if (collector != client.player) return;
 
         long currentTime = System.currentTimeMillis();
-        if (packet.getEntityId() == simpletweaks$lastEntityId && (currentTime - simpletweaks$lastPickupTime) < 150) {
+        if (packet.getEntityId() == simplevisuals$lastEntityId && (currentTime - simplevisuals$lastPickupTime) < 150) {
             return;
         }
-        simpletweaks$lastEntityId = packet.getEntityId();
-        simpletweaks$lastPickupTime = currentTime;
+        simplevisuals$lastEntityId = packet.getEntityId();
+        simplevisuals$lastPickupTime = currentTime;
 
         Entity pickedUpEntity = this.world.getEntityById(packet.getEntityId());
 

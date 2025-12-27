@@ -104,7 +104,7 @@ public abstract class ChatHudMixin {
             if (opacity > 0.005f) {
                 int lineY = startY - i * lineHeight;
                 int drawY = lineY - textOffset - 1;
-                simpletweaks$drawHeadForLine(context, visibleLine, drawY, opacity);
+                simplevisuals$drawHeadForLine(context, visibleLine, drawY, opacity);
             }
         }
 
@@ -112,7 +112,7 @@ public abstract class ChatHudMixin {
     }
 
     @Unique
-    private void simpletweaks$drawHeadForLine(DrawContext context, ChatHudLine.Visible visibleLine, int y, float opacity) {
+    private void simplevisuals$drawHeadForLine(DrawContext context, ChatHudLine.Visible visibleLine, int y, float opacity) {
         ChatHudLine rawLine = null;
         for (ChatHudLine line : this.messages) {
             if (line.creationTick() == visibleLine.addedTime()) {
@@ -122,7 +122,7 @@ public abstract class ChatHudMixin {
         }
         if (rawLine == null) return;
 
-        String senderName = simpletweaks$getSenderName(rawLine.content());
+        String senderName = simplevisuals$getSenderName(rawLine.content());
         if (senderName == null) return;
 
         PlayerListEntry playerEntry = this.client.getNetworkHandler().getPlayerListEntry(senderName);
@@ -144,7 +144,7 @@ public abstract class ChatHudMixin {
     }
 
     @Unique
-    private String simpletweaks$getSenderName(Text text) {
+    private String simplevisuals$getSenderName(Text text) {
         if (text.getContent() instanceof TranslatableTextContent translatable) {
             String key = translatable.getKey();
             if (key.startsWith("chat.type.")) {

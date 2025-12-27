@@ -3,8 +3,7 @@
   "package": "com.simplevisuals.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "EntityAccessor",
-    "client.FilledMapItemMixin"
+    "EntityAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
@@ -13,6 +12,7 @@
     "requireAnnotations": true
   },
   "client": [
+    "client.FilledMapItemMixin",
     "client.ChatHudMixin",
     "client.ClientPlayNetworkHandlerMixin",
     "client.HeldItemTooltipMixin",

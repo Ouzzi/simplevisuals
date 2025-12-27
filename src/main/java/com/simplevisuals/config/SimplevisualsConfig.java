@@ -75,7 +75,7 @@ public class SimplevisualsConfig implements ConfigData {
 
         public static class SpeedLines {
             @ConfigEntry.Gui.Tooltip
-            public boolean enableSpeedLines = false;
+            public boolean enableSpeedLines = true;
 
             @ConfigEntry.Gui.Tooltip
             public int speedLinesColor = 0xFFFFFF;

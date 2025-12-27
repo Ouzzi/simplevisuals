@@ -24,8 +24,8 @@ public class ModCommands {
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 
-            // --- CONFIG COMMANDS (simpletweaks) ---
-            dispatcher.register(CommandManager.literal("simpletweaks")
+            // --- CONFIG COMMANDS (simplevisuals) ---
+            dispatcher.register(CommandManager.literal("simplevisuals")
                     // Level 4 für Admin-Befehle (Config Änderungen)
                     .requires(source -> checkPermission(source, 4))
                             // NEU: Player Locator
