@@ -42,7 +42,6 @@ public abstract class LivingEntityHealthMixin extends Entity {
 
             // LOGGING AKTIVIERT: Prüfe die Konsole, ob Zeilen auftauchen, wenn du Mobs schlägst!
             if (diff > 0) {
-                System.out.println("[SimpleVisuals] Damage detected on " + this.getName().getString() + " (" + this.getId() + "): " + diff);
 
                 boolean isSpecial = false;
                 if (diff > 8.0f) isSpecial = true; // Kritischer Treffer Simulation

@@ -10,6 +10,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.biome.Biome;
 
@@ -24,6 +25,7 @@ public class BiomeNotificationHud implements HudRenderCallback {
     private RegistryKey<Biome> currentBiomeKey = null;
     private Text currentBiomeName = null;
     private int displayTimer = 0;
+    private BlockPos lastPos = null;
     
     // Cooldown Speicher: BiomeID -> Zeitstempel (in ms) wann wir es zuletzt verlassen haben
     private final Map<Identifier, Long> biomeCooldowns = new HashMap<>();
@@ -32,8 +34,17 @@ public class BiomeNotificationHud implements HudRenderCallback {
         if (client.player == null || client.world == null) return;
         if (!Simplevisuals.getConfig().visuals.biomeInfo.enable) return;
 
-        RegistryEntry<Biome> biomeEntry = client.world.getBiome(client.player.getBlockPos());
-        
+        BlockPos currentPos = client.player.getBlockPos();
+
+        // OPTIMIERUNG: Nur prüfen, wenn sich die Position geändert hat
+        if (lastPos != null && currentPos.equals(lastPos)) {
+            // Timer Logik muss trotzdem laufen
+            if (displayTimer > 0) displayTimer--;
+            return;
+        }
+        lastPos = currentPos;
+
+        RegistryEntry<Biome> biomeEntry = client.world.getBiome(currentPos);
         // Versuchen den Key zu bekommen (1.21 Style)
         biomeEntry.getKey().ifPresent(key -> {
             if (key != currentBiomeKey) {

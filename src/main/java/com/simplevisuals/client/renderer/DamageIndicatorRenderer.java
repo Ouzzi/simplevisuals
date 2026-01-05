@@ -6,7 +6,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.BufferAllocator; // Wichtiger Import
+import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
@@ -20,6 +20,9 @@ import java.util.List;
 
 public class DamageIndicatorRenderer {
     private static final List<Indicator> indicators = new ArrayList<>();
+
+    // OPTIMIERUNG: Allocator statisch wiederverwenden, statt jeden Frame neu zu erstellen.
+    private static final BufferAllocator allocator = new BufferAllocator(1024);
 
     public static void add(Vec3d pos, float amount, boolean isSpecial) {
         if (!Simplevisuals.getConfig().visuals.damageIndicators.enable) return;
@@ -37,68 +40,67 @@ public class DamageIndicatorRenderer {
         MatrixStack matrices = context.matrices();
         TextRenderer textRenderer = client.textRenderer;
 
-        // FIX: Wir erstellen einen temporären BufferAllocator anstatt Tessellator zu nutzen.
-        // Try-with-resources sorgt dafür, dass der Speicher danach freigegeben wird.
-        try (BufferAllocator allocator = new BufferAllocator(1024)) {
-            VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(allocator);
+        // Wir nutzen den statischen Allocator
+        VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(allocator);
 
-            var config = Simplevisuals.getConfig().visuals.damageIndicators;
-            int colorNormal = config.colorNormal;
-            int colorSpecial = config.colorSpecial;
-            boolean showBorder = config.showBorder;
-            float baseScale = 0.03f * config.scale;
+        var config = Simplevisuals.getConfig().visuals.damageIndicators;
+        // Caching von Config-Werten für Schleife
+        int colorNormal = config.colorNormal;
+        int colorSpecial = config.colorSpecial;
+        boolean showBorder = config.showBorder;
+        float baseScale = 0.03f * config.scale;
 
-            // RenderSystem Aufrufe entfernt (Blend/DepthTest).
-            // Der TextLayerType.SEE_THROUGH kümmert sich automatisch darum.
+        // Farben vorberechnen
+        int borderArgbTemplate = 0xFF000000; // Alpha wird unten gesetzt
 
-            Iterator<Indicator> it = indicators.iterator();
-            while (it.hasNext()) {
-                Indicator ind = it.next();
-                ind.age++;
+        Iterator<Indicator> it = indicators.iterator();
+        while (it.hasNext()) {
+            Indicator ind = it.next();
+            ind.age++;
 
-                if (ind.age > 40) {
-                    it.remove();
-                    continue;
-                }
-
-                double yOffset = MathHelper.lerp(ind.age / 40.0, 0.0, 1.2);
-
-                matrices.push();
-                matrices.translate(ind.pos.x - cameraPos.x, (ind.pos.y + 0.5 + yOffset) - cameraPos.y, ind.pos.z - cameraPos.z);
-                matrices.multiply(cameraRotation);
-                matrices.scale(-baseScale, -baseScale, baseScale);
-
-                String textStr = String.valueOf((int)Math.ceil(ind.damage));
-                Text text = Text.literal(textStr);
-
-                float x = -textRenderer.getWidth(text) / 2.0f;
-                int color = ind.isSpecial ? colorSpecial : colorNormal;
-
-                int alpha = 255;
-                if (ind.age > 25) {
-                    alpha = (int) (255 * (1.0f - (ind.age - 25) / 15.0f));
-                }
-                int argb = (alpha << 24) | (color & 0x00FFFFFF);
-                int borderArgb = (alpha << 24) | 0x000000;
-
-                Matrix4f matrix = matrices.peek().getPositionMatrix();
-
-                // Nutzung von SEE_THROUGH sorgt für Sichtbarkeit durch Wände und Transparenz
-                if (showBorder) {
-                    textRenderer.draw(text, x + 1, 1, borderArgb, false, matrix, immediate, TextRenderer.TextLayerType.SEE_THROUGH, 0, 15728880);
-                    textRenderer.draw(text, x - 1, 1, borderArgb, false, matrix, immediate, TextRenderer.TextLayerType.SEE_THROUGH, 0, 15728880);
-                    textRenderer.draw(text, x, 0, borderArgb, false, matrix, immediate, TextRenderer.TextLayerType.SEE_THROUGH, 0, 15728880);
-                    textRenderer.draw(text, x, 2, borderArgb, false, matrix, immediate, TextRenderer.TextLayerType.SEE_THROUGH, 0, 15728880);
-                }
-
-                textRenderer.draw(text, x, 1, argb, false, matrix, immediate, TextRenderer.TextLayerType.SEE_THROUGH, 0, 15728880);
-
-                matrices.pop();
+            if (ind.age > 40) {
+                it.remove();
+                continue;
             }
 
-            // Zeichnet alle gepufferten Texte sofort
-            immediate.draw();
-        } // allocator.close() wird hier automatisch aufgerufen
+            double yOffset = MathHelper.lerp(ind.age / 40.0, 0.0, 1.2);
+
+            matrices.push();
+            matrices.translate(ind.pos.x - cameraPos.x, (ind.pos.y + 0.5 + yOffset) - cameraPos.y, ind.pos.z - cameraPos.z);
+            matrices.multiply(cameraRotation);
+            matrices.scale(-baseScale, -baseScale, baseScale);
+
+            // OPTIMIERUNG: String-Konvertierung ist teuer.
+            // Hier okay, aber bei tausenden Entities könnte man cachen.
+            String textStr = String.valueOf((int)Math.ceil(ind.damage));
+            Text text = Text.literal(textStr);
+
+            float x = -textRenderer.getWidth(text) / 2.0f;
+            int color = ind.isSpecial ? colorSpecial : colorNormal;
+
+            int alpha = 255;
+            if (ind.age > 25) {
+                alpha = (int) (255 * (1.0f - (ind.age - 25) / 15.0f));
+            }
+            int argb = (alpha << 24) | (color & 0x00FFFFFF);
+            int borderArgb = (alpha << 24) | 0x000000;
+
+            Matrix4f matrix = matrices.peek().getPositionMatrix();
+
+            if (showBorder) {
+                textRenderer.draw(text, x + 1, 1, borderArgb, false, matrix, immediate, TextRenderer.TextLayerType.SEE_THROUGH, 0, 15728880);
+                textRenderer.draw(text, x - 1, 1, borderArgb, false, matrix, immediate, TextRenderer.TextLayerType.SEE_THROUGH, 0, 15728880);
+                textRenderer.draw(text, x, 0, borderArgb, false, matrix, immediate, TextRenderer.TextLayerType.SEE_THROUGH, 0, 15728880);
+                textRenderer.draw(text, x, 2, borderArgb, false, matrix, immediate, TextRenderer.TextLayerType.SEE_THROUGH, 0, 15728880);
+            }
+
+            textRenderer.draw(text, x, 1, argb, false, matrix, immediate, TextRenderer.TextLayerType.SEE_THROUGH, 0, 15728880);
+
+            matrices.pop();
+        }
+
+        immediate.draw();
+        // Der Allocator wird von 'immediate.draw()' resettet, also ist er bereit für den nächsten Frame.
     }
 
     private static class Indicator {
