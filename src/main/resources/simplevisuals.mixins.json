@@ -12,13 +12,14 @@
     "requireAnnotations": true
   },
   "client": [
-    "client.FilledMapItemMixin",
     "client.ChatHudMixin",
     "client.ClientPlayNetworkHandlerMixin",
+    "client.FilledMapItemMixin",
     "client.HeldItemTooltipMixin",
     "client.InGameScreenHudMixin",
     "client.InventoryEffectBarMixin",
     "client.LocatorBarMixin",
-    "client.StatusEffectBarMixin"
+    "client.StatusEffectBarMixin",
+    "client.LivingEntityHealthMixin"
   ]
 }

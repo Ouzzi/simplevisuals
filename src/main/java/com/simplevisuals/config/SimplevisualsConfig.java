@@ -73,6 +73,36 @@ public class SimplevisualsConfig implements ConfigData {
         @ConfigEntry.Gui.CollapsibleObject
         public PickupNotifier pickupNotifier = new PickupNotifier();
 
+        @ConfigEntry.Gui.CollapsibleObject
+        public DamageIndicators damageIndicators = new DamageIndicators();
+
+        @ConfigEntry.Gui.CollapsibleObject
+        public BiomeInfo biomeInfo = new BiomeInfo();
+
+        public static class DamageIndicators {
+            @ConfigEntry.Gui.Tooltip
+            public boolean enable = true;
+            @ConfigEntry.Gui.Tooltip
+            public float scale = 1.0f;
+            @ConfigEntry.Gui.Tooltip
+            public int colorNormal = 0xFFFFFF; // Weiß
+            @ConfigEntry.Gui.Tooltip
+            public int colorSpecial = 0xFFD700; // Gold (für Smite/Arthropods)
+            @ConfigEntry.Gui.Tooltip
+            public boolean showBorder = true;
+        }
+
+        public static class BiomeInfo {
+            @ConfigEntry.Gui.Tooltip
+            public boolean enable = false;
+            @ConfigEntry.Gui.Tooltip
+            public int displayDuration = 60; // Wie lange die Nachricht bleibt (Ticks)
+            @ConfigEntry.Gui.Tooltip
+            public int cooldownSeconds = 60; // Wie lange ein Biom ignoriert wird nach Verlassen
+            @ConfigEntry.Gui.Tooltip
+            public int yOffset = 50; // Versatz von oben
+        }
+
         public static class SpeedLines {
             @ConfigEntry.Gui.Tooltip
             public boolean enableSpeedLines = true;
