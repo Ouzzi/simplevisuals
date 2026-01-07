@@ -4,7 +4,6 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "EntityAccessor",
-    "client.ItemModelsMixin"
   ],
   "injectors": {
     "defaultRequire": 1
@@ -20,7 +19,7 @@
     "client.HeldItemTooltipMixin",
     "client.InGameScreenHudMixin",
     "client.InventoryEffectBarMixin",
-    "client.ItemRendererMixin",
+    "client.ItemModelManagerMixin",
     "client.LivingEntityHealthMixin",
     "client.LocatorBarMixin",
     "client.StatusEffectBarMixin"
