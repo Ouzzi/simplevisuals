@@ -16,22 +16,26 @@ import net.minecraft.util.Rarity;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class PickupNotifierHud {
 
-    private static final List<Notification> notifications = new ArrayList<>();
+    // FIX: Use thread-safe collections to prevent ConcurrentModificationException
+    // when accessed from Network thread (via Mixin) and Render thread (via Tick) simultaneously.
+    private static final List<Notification> notifications = new CopyOnWriteArrayList<>();
     private static final MinecraftClient client = MinecraftClient.getInstance();
 
-    // Cache für gelöschte Entities
-    private static final Map<Integer, CachedPickup> deadEntityCache = new HashMap<>();
+    // Cache for deleted entities
+    private static final Map<Integer, CachedPickup> deadEntityCache = new ConcurrentHashMap<>();
 
-    // Warteschlange für Pickups ohne Daten (z.B. vom Dropper)
-    private static final List<PendingPickup> pendingPickups = new ArrayList<>();
+    // Queue for pending pickups
+    private static final List<PendingPickup> pendingPickups = new CopyOnWriteArrayList<>();
 
     public record CachedPickup(ItemStack stack, int xpValue, long timestamp) {}
     private record PendingPickup(int entityId, int amount, long timestamp) {}
 
-    // --- CACHE METHODEN ---
+    // --- CACHE METHODS ---
     public static void cacheEntity(int entityId, ItemStack stack) {
         if (!stack.isEmpty()) {
             deadEntityCache.put(entityId, new CachedPickup(stack, 0, System.currentTimeMillis()));
@@ -46,7 +50,7 @@ public class PickupNotifierHud {
         return deadEntityCache.get(entityId);
     }
 
-    // --- PENDING METHODEN (Dropper Fix) ---
+    // --- PENDING METHODS (Dropper Fix) ---
     public static void schedulePendingPickup(int entityId, int amount) {
         pendingPickups.add(new PendingPickup(entityId, amount, System.currentTimeMillis()));
     }
@@ -56,29 +60,22 @@ public class PickupNotifierHud {
     }
 
     /**
-     * Versucht, einen ausstehenden Pickup mit einem Inventar-Update zu matchen.
-     * Wird vom Mixin aufgerufen, wenn sich das Inventar ändert.
+     * Tries to match a pending pickup with an inventory update.
      */
     public static void resolvePendingWithInventory(ItemStack stack, int changeAmount) {
         if (pendingPickups.isEmpty()) return;
 
         long now = System.currentTimeMillis();
-        Iterator<PendingPickup> it = pendingPickups.iterator();
 
-        while (it.hasNext()) {
-            PendingPickup pending = it.next();
-
-            // Wenn das Event zu alt ist (> 500ms), ignorieren wir es hier (wird im tick() aufgeräumt)
+        // Iterating CopyOnWriteArrayList is safe (snapshot iterator)
+        for (PendingPickup pending : pendingPickups) {
+            // If event is too old (> 500ms), ignore here (cleaned up in tick)
             if (now - pending.timestamp > 500) continue;
 
-            // Wir matchen, wenn die Menge stimmt ODER wir einfach irgendeinen Pending Pickup nehmen (FIFO).
-            // Da Netzwerk-Pakete gebündelt sein können, ist eine exakte Mengen-Übereinstimmung nicht immer garantiert,
-            // aber wir versuchen es.
-            // Einfache Heuristik: Nimm den ersten frischen Pending Pickup.
-
-            addNotification(stack, changeAmount); // Nutze die Menge aus dem Inventar-Update, die ist korrekt.
-            it.remove();
-            return; // Ein Update = Ein Pickup aufgelöst.
+            // Match found (simple FIFO heuristic)
+            addNotification(stack, changeAmount);
+            pendingPickups.remove(pending); // Safe removal
+            return;
         }
     }
     // ----------------------------------------
@@ -289,35 +286,30 @@ public class PickupNotifierHud {
     public static void tick() {
         long now = System.currentTimeMillis();
 
-        // 1. Pending Pickups prüfen (wurden Daten vom Entity geladen?)
+        // 1. Check Pending Pickups (snapshot iterator safe for removal via object)
         if (!pendingPickups.isEmpty() && client.world != null) {
-            Iterator<PendingPickup> it = pendingPickups.iterator();
-            while (it.hasNext()) {
-                PendingPickup pending = it.next();
-
-                // Timeout (1 Sekunde)
+            for (PendingPickup pending : pendingPickups) {
+                // Timeout (1 second)
                 if (now - pending.timestamp > 1000) {
-                    it.remove();
+                    pendingPickups.remove(pending);
                     continue;
                 }
 
-                // Check A: Entity lebt und hat jetzt Daten
+                // Check A: Entity exists and has data now
                 Entity entity = client.world.getEntityById(pending.entityId);
                 if (entity instanceof ItemEntity itemEntity && !itemEntity.getStack().isEmpty()) {
                     addNotification(itemEntity.getStack(), pending.amount);
-                    it.remove();
+                    pendingPickups.remove(pending);
                     continue;
                 }
 
-                // Check B: Entity ist im Cache
+                // Check B: Entity is in dead cache
                 CachedPickup cached = deadEntityCache.get(pending.entityId);
                 if (cached != null && !cached.stack().isEmpty()) {
                     addNotification(cached.stack(), pending.amount);
-                    it.remove();
+                    pendingPickups.remove(pending);
                     continue;
                 }
-
-                // Falls weder A noch B: Warten auf Inventar-Update (wird via Mixin getriggert)
             }
         }
 
@@ -325,13 +317,16 @@ public class PickupNotifierHud {
 
         var config = Simplevisuals.getConfig().visuals;
         int maxAge = config.pickupNotifier.pickupNotifierDuration;
-        Iterator<Notification> iterator = notifications.iterator();
-        while (iterator.hasNext()) {
-            Notification n = iterator.next();
-            n.age++;
-            if (n.age > maxAge) iterator.remove();
-        }
 
+        // Ageing notifications
+        for (Notification n : notifications) {
+            n.age++;
+        }
+        // Removing old ones (safe with CopyOnWriteArrayList)
+        notifications.removeIf(n -> n.age > maxAge);
+
+        // Clean dead cache
+        // Safe with ConcurrentHashMap
         deadEntityCache.values().removeIf(c -> (now - c.timestamp) > 1000);
     }
 

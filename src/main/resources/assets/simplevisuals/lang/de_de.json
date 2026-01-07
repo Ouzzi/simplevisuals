@@ -191,5 +191,6 @@
   "text.autoconfig.simplevisuals.option.visuals.heldItemTooltips.enable": "Aktivieren",
   "text.autoconfig.simplevisuals.option.visuals.heldItemTooltips.showDurability": "Show Durability",
   "text.autoconfig.simplevisuals.option.visuals.heldItemTooltips.showEnchantments": "Show Enchantments",
-  "text.autoconfig.simplevisuals.option.visuals.heldItemTooltips.maxEnchantments": "Max Enchantments"
+  "text.autoconfig.simplevisuals.option.visuals.heldItemTooltips.maxEnchantments": "Max Enchantments",
+  "simplevisuals.screen.anvil_uses": "Amboss-Nutzungen: %s"
 }

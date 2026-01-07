@@ -40,12 +40,10 @@ public class SimplevisualsClient implements ClientModInitializer {
             return null;
         });
 
-        // Client Ticks (zusammengefasst)
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (!client.isPaused()) {
-                PickupNotifierHud.tick();
-            }
-        });
-
+        com.simplevisuals.client.cit.CitRegistry.register(
+                net.minecraft.item.Items.STICK,
+                "Test",
+                net.minecraft.util.Identifier.ofVanilla("diamond")
+        );
     }
 }

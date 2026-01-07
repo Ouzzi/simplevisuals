@@ -248,5 +248,6 @@
   "text.autoconfig.simplefun.option.visuals.enhanceDeathMessages": "Enhance Death Messages",
   "text.autoconfig.simplefun.option.visuals.enhanceDeathMessages.@Tooltip": "Appends coordinates [x, y, z] to chat death messages if the player is in render distance.",
   "text.autoconfig.simplefun.option.visuals.deathCoordsMode": "Death Coordinates Mode",
-  "text.autoconfig.simplefun.option.visuals.deathCoordsMode.@Tooltip": "Choose how death coordinates are displayed.\nAppend: Inline with the message.\nSeparate: As a separate system message."
+  "text.autoconfig.simplefun.option.visuals.deathCoordsMode.@Tooltip": "Choose how death coordinates are displayed.\nAppend: Inline with the message.\nSeparate: As a separate system message.",
+  "simplevisuals.screen.anvil_uses": "Anvil Uses: %s"
 }
