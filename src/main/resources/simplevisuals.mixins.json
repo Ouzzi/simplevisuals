@@ -4,6 +4,8 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "EntityAccessor",
+    ,
+    "client.ResourcePackManagerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

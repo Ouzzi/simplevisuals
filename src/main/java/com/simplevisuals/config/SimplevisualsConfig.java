@@ -49,6 +49,8 @@ public class SimplevisualsConfig implements ConfigData {
         public float elytraPitchTolerance = 10.0f;
         @ConfigEntry.Gui.Tooltip
         public float elytraSensitivity = 4.0f;
+        @ConfigEntry.Gui.Tooltip(count = 2)
+        public boolean enableRenamedItemTextures = false;
 
         @ConfigEntry.Gui.Tooltip
         public boolean enhanceDeathMessages = true;
