@@ -101,4 +101,18 @@ public abstract class AnvilScreenMixin extends HandledScreen<AnvilScreenHandler>
             }
         }
     }
+
+
+    @org.spongepowered.asm.mixin.injection.ModifyVariable(
+            method = "onRenamed",
+            at = @org.spongepowered.asm.mixin.injection.At("HEAD"),
+            argsOnly = true
+    )
+    private String injectColorCodes(String name) {
+        if (com.simplevisuals.Simplevisuals.getConfig().visuals.enableAnvilFormatting && name != null) {
+            // Ersetzt z.B. "&cTest" durch "§cTest" (Rot) oder "&kTest" durch "§kTest" (Magisch)
+            return name.replace('&', '§');
+        }
+        return name;
+    }
 }

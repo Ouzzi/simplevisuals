@@ -195,5 +195,7 @@
   "simplevisuals.screen.anvil_uses": "Amboss-Nutzungen: %s",
 
   "text.autoconfig.simplevisuals.option.visuals.enableRenamedItemTextures": "Texturen für umbenannte Items (CIT)",
-  "text.autoconfig.simplevisuals.option.visuals.enableRenamedItemTextures.@Tooltip": "Aktiviert eigene Texturen für umbenannte Items basierend auf dem Config-Ordner.\n§cErfordert einen Neustart des Spiels, um wirksam zu werden!"
+  "text.autoconfig.simplevisuals.option.visuals.enableRenamedItemTextures.@Tooltip": "Aktiviert eigene Texturen für umbenannte Items basierend auf dem Config-Ordner.\n§cErfordert einen Neustart des Spiels, um wirksam zu werden!",
+  "text.autoconfig.simplevisuals.option.visuals.enableAnvilFormatting": "Amboss-Formatierungscodes (&)",
+  "text.autoconfig.simplevisuals.option.visuals.enableAnvilFormatting.@Tooltip": "Erlaubt die Nutzung von '&' für Farben im Amboss (z.B. &c für Rot, &k für Magie)."
 }

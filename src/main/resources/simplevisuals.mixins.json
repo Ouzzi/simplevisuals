@@ -3,8 +3,8 @@
   "package": "com.simplevisuals.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "AnvilScreenHandlerMixin",
     "EntityAccessor",
-    ,
     "client.ResourcePackManagerAccessor"
   ],
   "injectors": {

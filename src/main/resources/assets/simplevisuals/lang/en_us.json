@@ -252,5 +252,7 @@
   "simplevisuals.screen.anvil_uses": "Anvil Uses: %s",
 
   "text.autoconfig.simplevisuals.option.visuals.enableRenamedItemTextures": "Enable Renamed Item Textures (CIT)",
-  "text.autoconfig.simplevisuals.option.visuals.enableRenamedItemTextures.@Tooltip": "Enables custom textures for renamed items based on the files in the config folder.\n§cRequires a game restart to take effect!"
+  "text.autoconfig.simplevisuals.option.visuals.enableRenamedItemTextures.@Tooltip": "Enables custom textures for renamed items based on the files in the config folder.\n§cRequires a game restart to take effect!",
+  "text.autoconfig.simplevisuals.option.visuals.enableAnvilFormatting": "Enable Anvil Formatting codes",
+  "text.autoconfig.simplevisuals.option.visuals.enableAnvilFormatting.@Tooltip": "Allows using '&' as a formatting code in anvils (e.g., &c for red, &k for magic)."
 }
